@@ -113,6 +113,9 @@ class SeleniumMiddleware:
         if request.script:
             self.driver.execute_script(request.script)
 
+        if request.implicit_wait:
+            self.driver.implicitly_wait(request.implicit_wait)
+
         if request.wait_until:
             WebDriverWait(self.driver, request.wait_time).until(
                 request.wait_until
