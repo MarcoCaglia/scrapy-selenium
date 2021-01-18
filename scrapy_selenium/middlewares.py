@@ -5,6 +5,7 @@ from importlib import import_module
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
 from scrapy.http import HtmlResponse
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 
 from .http import SeleniumRequest
@@ -113,13 +114,14 @@ class SeleniumMiddleware:
         if request.script:
             self.driver.execute_script(request.script)
 
-        if request.implicit_wait:
-            self.driver.implicitly_wait(request.implicit_wait)
-
         if request.wait_until:
-            WebDriverWait(self.driver, request.wait_time).until(
-                request.wait_until
-            )
+            ignored_exception = (TimeoutException,) if request.move_on else ()
+            try:
+                WebDriverWait(self.driver, request.wait_time).until(
+                    request.wait_until
+                )
+            except ignored_exception:
+                pass
 
         if request.screenshot:
             request.meta['screenshot'] = self.driver.get_screenshot_as_png()
